@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
@@ -28,17 +29,20 @@ public class MainActivity extends AppCompatActivity {
 
     ExecutorService executorService;
 
+    ProgressBar progressBar;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         imageView = findViewById(R.id.imageview);
+        progressBar = findViewById(R.id.progressbar);
         executorService = Executors.newCachedThreadPool();
     }
 
     public void click(View view) {
         new ImageDownloadTask(this).execute(stringToURL("http://www.freeimageslive.com/galleries/objects/general/pics/woodenbox0482.jpg"));
-        new ImageDownloadTask(this).executeOnExecutor(executorService,stringToURL("http://www.freeimageslive.com/galleries/objects/general/pics/woodenbox0482.jpg"));
+//        new ImageDownloadTask(this).executeOnExecutor(executorService,stringToURL("http://www.freeimageslive.com/galleries/objects/general/pics/woodenbox0482.jpg"));
     }
 
     URL stringToURL(String url) {
@@ -56,23 +60,25 @@ public class MainActivity extends AppCompatActivity {
         Context context;
 
         public ImageDownloadTask(Context context){
-
+            this.context = context;
         }
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
             Log.d(TAG,"onPreExecute");
+            progressBar.setVisibility(View.VISIBLE);
 
         }
 
         @Override
         protected Bitmap doInBackground(URL... urls) {
             Bitmap bitmap = null;
-
             for (URL url : urls) {
                 bitmap = startDownload(url);
             }
+            Log.d(TAG,"doInBackground  " + " KB" + context.getPackageName());
+
 
             return bitmap;
         }
@@ -87,7 +93,9 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Bitmap bitmap) {
             super.onPostExecute(bitmap);
-            Log.d(TAG,"onPostExecute bitmap Size:: " +bitmap.getByteCount()/1024 + " KB");
+            Log.d(TAG,"onPostExecute bitmap Size:: " +bitmap.getByteCount()/1024 + " KB" + context.getPackageName());
+            progressBar.setVisibility(View.GONE);
+
 
             if (bitmap != null) {
                 imageView.setImageBitmap(bitmap);
